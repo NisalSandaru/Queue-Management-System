@@ -29,7 +29,7 @@ public class AuthController {
 
     // STAFF + ADMIN can create STAFF
     @PostMapping("/signup/staff")
-    @PreAuthorize("hasRole('STAFF') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AuthResponse> staffSignup(@RequestBody UserDTO userDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authService.staffSignUp(userDTO));

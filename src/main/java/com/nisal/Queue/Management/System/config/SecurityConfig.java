@@ -29,7 +29,7 @@ public class SecurityConfig {
                         management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/signup", "/auth/login").permitAll()
-                        .requestMatchers("/auth/signup/staff").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/auth/signup/staff").hasRole("ADMIN")
                         .requestMatchers("/auth/signup/admin").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")
