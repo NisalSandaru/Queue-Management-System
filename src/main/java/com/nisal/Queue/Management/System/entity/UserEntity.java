@@ -42,7 +42,7 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    private UserRole role = UserRole.CUSTOMER;
+    private UserRole role = UserRole.ROLE_CUSTOMER;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)

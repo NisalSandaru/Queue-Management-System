@@ -3,6 +3,7 @@ package com.nisal.Queue.Management.System.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -25,12 +27,14 @@ public class SecurityConfig {
         return http
                 .sessionManagement(management ->
                         management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(Authorize->
-                        Authorize.requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/api/staff/**").hasAnyRole("STAFF", "ADMIN")
-                                .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
-                                .anyRequest().permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/signup", "/auth/login").permitAll()
+                        .requestMatchers("/auth/signup/staff").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/auth/signup/admin").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
+                        .anyRequest().authenticated()
                 ).addFilterBefore(new JwtValidator(),
                         BasicAuthenticationFilter.class
                 ).csrf(AbstractHttpConfigurer::disable)

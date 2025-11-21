@@ -7,6 +7,7 @@ import com.nisal.Queue.Management.System.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,5 +25,29 @@ public class AuthController {
             (@RequestBody UserDTO userDTO)throws UserException{
         AuthResponse res = authService.CusSignUp(userDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    }
+
+    // STAFF + ADMIN can create STAFF
+    @PostMapping("/signup/staff")
+    @PreAuthorize("hasRole('STAFF') or hasRole('ADMIN')")
+    public ResponseEntity<AuthResponse> staffSignup(@RequestBody UserDTO userDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.staffSignUp(userDTO));
+    }
+
+    // ONLY ADMIN can create ADMIN
+    @PostMapping("/signup/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AuthResponse> adminSignup(@RequestBody UserDTO userDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.adminSignUp(userDTO));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> loginHandler(
+            @RequestBody UserDTO userDto) throws UserException{
+        return ResponseEntity.ok(
+                authService.login(userDto)
+        );
     }
 }

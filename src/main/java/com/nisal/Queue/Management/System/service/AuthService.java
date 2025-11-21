@@ -12,10 +12,14 @@ import com.nisal.Queue.Management.System.response.AuthResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Optional;
 
 @Service
@@ -24,10 +28,11 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final CustomUserImplementation customUserImplementation;
 
     public AuthResponse CusSignUp(UserDTO userDTO){
-        Optional<UserEntity> userOp = userRepository.findByEmail(userDTO.getEmail());
-        if (userOp.isPresent()){
+        UserEntity userOp = userRepository.findByEmail(userDTO.getEmail());
+        if (userOp != null){
             throw new UserException("email already registered !");
         }
         UserEntity user = UserEntity.builder()
@@ -36,7 +41,7 @@ public class AuthService {
                 .email(userDTO.getEmail())
                 .phone(userDTO.getPhone())
                 .password(passwordEncoder.encode(userDTO.getPassword()))
-                .role(UserRole.CUSTOMER)
+                .role(UserRole.ROLE_CUSTOMER)
                 .status(UserStatus.ACTIVE)
                 .profileImageUrl(userDTO.getProfileImageUrl())
                 .build();
@@ -56,6 +61,96 @@ public class AuthService {
         authResponse.setUser(UserMapper.toDTO(savedUser));
 
         return authResponse;
+    }
+
+    // Reusable method
+    private AuthResponse createUserWithRole(UserDTO userDTO, UserRole role) {
+
+        if (userRepository.findByEmail(userDTO.getEmail()) != null) {
+            throw new UserException("Email already registered!");
+        }
+
+        UserEntity user = UserEntity.builder()
+                .firstName(userDTO.getFirstName())
+                .lastName(userDTO.getLastName())
+                .email(userDTO.getEmail())
+                .phone(userDTO.getPhone())
+                .password(passwordEncoder.encode(userDTO.getPassword()))
+                .role(role)
+                .status(UserStatus.ACTIVE)
+                .profileImageUrl(userDTO.getProfileImageUrl())
+                .build();
+
+        UserEntity savedUser = userRepository.save(user);
+
+        Authentication auth =
+                new UsernamePasswordAuthenticationToken(user.getEmail(), userDTO.getPassword());
+
+        String token = jwtProvider.generateToken(auth);
+
+        AuthResponse res = new AuthResponse();
+        res.setJwt(token);
+        res.setMessage("Registered Successfully");
+        res.setUser(UserMapper.toDTO(savedUser));
+
+        return res;
+    }
+
+    // STAFF + ADMIN create STAFF
+    public AuthResponse staffSignUp(UserDTO userDTO) {
+        return createUserWithRole(userDTO, UserRole.ROLE_STAFF);
+    }
+
+    // ADMIN creates ADMIN
+    public AuthResponse adminSignUp(UserDTO userDTO) {
+        return createUserWithRole(userDTO, UserRole.ROLE_ADMIN);
+    }
+
+
+    public AuthResponse login(UserDTO userDto) throws UserException {
+        String email = userDto.getEmail();
+        String password = userDto.getPassword();
+        Authentication authentication = authenticate(email, password);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+
+        String role = authorities.iterator().next().getAuthority();
+
+        String jwt = jwtProvider.generateToken(authentication);
+
+        UserEntity user = userRepository.findByEmail(email);
+        if (user == null){
+            throw new UserException("email cant find !");
+        }
+
+        UserStatus status = user.getStatus();
+        if (status == UserStatus.INACTIVE){
+            throw new UserException("inactive user !");
+        }
+
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setJwt(jwt);
+        authResponse.setMessage("Login Successfully");
+        authResponse.setUser(UserMapper.toDTO(user));
+
+        return authResponse;
+    }
+
+    private Authentication authenticate(String email, String password) throws UserException {
+
+        UserDetails userDetails = customUserImplementation.loadUserByUsername(email);
+
+        if(userDetails == null){
+            throw new UserException("email id doesn't exist "+ email);
+        }
+
+        if(!passwordEncoder.matches(password, userDetails.getPassword())){
+            throw new UserException("password doesn't match");
+        }
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
 }
