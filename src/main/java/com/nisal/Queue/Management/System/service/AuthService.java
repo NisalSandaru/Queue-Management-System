@@ -5,22 +5,21 @@ import com.nisal.Queue.Management.System.dto.UserDTO;
 import com.nisal.Queue.Management.System.entity.UserEntity;
 import com.nisal.Queue.Management.System.enums.UserRole;
 import com.nisal.Queue.Management.System.enums.UserStatus;
-import com.nisal.Queue.Management.System.exceptions.UserException;
+import com.nisal.Queue.Management.System.exceptions.UserNotFoundException;
 import com.nisal.Queue.Management.System.mapper.UserMapper;
 import com.nisal.Queue.Management.System.repository.UserRepository;
 import com.nisal.Queue.Management.System.response.AuthResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class AuthService {
     public AuthResponse CusSignUp(UserDTO userDTO){
         UserEntity userOp = userRepository.findByEmail(userDTO.getEmail());
         if (userOp != null){
-            throw new UserException("email already registered !");
+            throw new UserNotFoundException("email already registered !");
         }
         UserEntity user = UserEntity.builder()
                 .firstName(userDTO.getFirstName())
@@ -64,10 +63,10 @@ public class AuthService {
     }
 
     // Reusable method
-    private AuthResponse createUserWithRole(UserDTO userDTO, UserRole role) {
+    private AuthResponse createUserWithRole(UserDTO userDTO, UserRole role) throws BadRequestException {
 
         if (userRepository.findByEmail(userDTO.getEmail()) != null) {
-            throw new UserException("Email already registered!");
+            throw new BadRequestException("Email already registered!");
         }
 
         UserEntity user = UserEntity.builder()
@@ -97,17 +96,17 @@ public class AuthService {
     }
 
     // STAFF + ADMIN create STAFF
-    public AuthResponse staffSignUp(UserDTO userDTO) {
+    public AuthResponse staffSignUp(UserDTO userDTO) throws BadRequestException {
         return createUserWithRole(userDTO, UserRole.ROLE_STAFF);
     }
 
     // ADMIN creates ADMIN
-    public AuthResponse adminSignUp(UserDTO userDTO) {
+    public AuthResponse adminSignUp(UserDTO userDTO) throws BadRequestException {
         return createUserWithRole(userDTO, UserRole.ROLE_ADMIN);
     }
 
 
-    public AuthResponse login(UserDTO userDto) throws UserException {
+    public AuthResponse login(UserDTO userDto) throws UserNotFoundException, BadRequestException {
         String email = userDto.getEmail();
         String password = userDto.getPassword();
         Authentication authentication = authenticate(email, password);
@@ -122,12 +121,12 @@ public class AuthService {
 
         UserEntity user = userRepository.findByEmail(email);
         if (user == null){
-            throw new UserException("email cant find !");
+            throw new UserNotFoundException("email cant find !");
         }
 
         UserStatus status = user.getStatus();
         if (status == UserStatus.INACTIVE){
-            throw new UserException("inactive user !");
+            throw new BadRequestException("inactive user !");
         }
 
         AuthResponse authResponse = new AuthResponse();
@@ -138,16 +137,16 @@ public class AuthService {
         return authResponse;
     }
 
-    private Authentication authenticate(String email, String password) throws UserException {
+    private Authentication authenticate(String email, String password) throws UserNotFoundException, BadRequestException {
 
         UserDetails userDetails = customUserImplementation.loadUserByUsername(email);
 
         if(userDetails == null){
-            throw new UserException("email id doesn't exist "+ email);
+            throw new UserNotFoundException("email id doesn't exist "+ email);
         }
 
         if(!passwordEncoder.matches(password, userDetails.getPassword())){
-            throw new UserException("password doesn't match");
+            throw new BadRequestException("password doesn't match");
         }
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

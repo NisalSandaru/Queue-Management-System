@@ -1,10 +1,11 @@
 package com.nisal.Queue.Management.System.controller;
 
 import com.nisal.Queue.Management.System.dto.UserDTO;
-import com.nisal.Queue.Management.System.exceptions.UserException;
+import com.nisal.Queue.Management.System.exceptions.UserNotFoundException;
 import com.nisal.Queue.Management.System.response.AuthResponse;
 import com.nisal.Queue.Management.System.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> cusSignup
-            (@RequestBody UserDTO userDTO)throws UserException{
+            (@RequestBody UserDTO userDTO)throws UserNotFoundException {
         AuthResponse res = authService.CusSignUp(userDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
@@ -30,7 +31,7 @@ public class AuthController {
     // STAFF + ADMIN can create STAFF
     @PostMapping("/signup/staff")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AuthResponse> staffSignup(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<AuthResponse> staffSignup(@RequestBody UserDTO userDTO) throws BadRequestException {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authService.staffSignUp(userDTO));
     }
@@ -38,14 +39,14 @@ public class AuthController {
     // ONLY ADMIN can create ADMIN
     @PostMapping("/signup/admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AuthResponse> adminSignup(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<AuthResponse> adminSignup(@RequestBody UserDTO userDTO) throws BadRequestException {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authService.adminSignUp(userDTO));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> loginHandler(
-            @RequestBody UserDTO userDto) throws UserException{
+            @RequestBody UserDTO userDto) throws UserNotFoundException, BadRequestException {
         return ResponseEntity.ok(
                 authService.login(userDto)
         );
