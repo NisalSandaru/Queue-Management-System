@@ -24,4 +24,6 @@ public class ServiceCategory extends Auditable {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Service> services = new ArrayList<>();
+
+    private String catImageUrl;
 }

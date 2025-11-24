@@ -17,6 +17,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());
     }
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<?> handleCategoryNotFoundException(CategoryNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
+    }
 
 
     // 403 Forbidden (user is authenticated but not allowed)
