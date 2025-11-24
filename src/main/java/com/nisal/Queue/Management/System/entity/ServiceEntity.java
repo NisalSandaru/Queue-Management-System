@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "services",
+@Table(name = "serviceEntities",
         indexes = {@Index(name = "idx_services_name", columnList = "name")})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service extends Auditable {
+public class ServiceEntity extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,22 +32,22 @@ public class Service extends Auditable {
     private String description;
 
     @Column(name = "duration_minutes", nullable = false)
-    private Integer durationMinutes = 30;
+    private Integer durationMinutes;
 
     @Column(name = "price", nullable = false)
-    private BigDecimal price = BigDecimal.ZERO;
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     @ColumnDefault("'ACTIVE'")
     private ServiceStatus status;
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "serviceEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ServiceProvider> providers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "serviceEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecurringSlot> recurringSlots = new ArrayList<>();
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "serviceEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimeSlot> timeSlots = new ArrayList<>();
 }

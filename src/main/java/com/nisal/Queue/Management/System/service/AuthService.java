@@ -29,11 +29,21 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final CustomUserImplementation customUserImplementation;
 
-    public AuthResponse CusSignUp(UserDTO userDTO){
+    public AuthResponse CusSignUp(UserDTO userDTO) throws BadRequestException {
         UserEntity userOp = userRepository.findByEmail(userDTO.getEmail());
         if (userOp != null){
             throw new UserNotFoundException("email already registered !");
         }
+
+        if (userDTO.getFirstName() == null || userDTO.getFirstName().isEmpty())
+            throw new BadRequestException("First name cant be empty");
+
+        if (userDTO.getLastName() == null || userDTO.getLastName().isEmpty())
+            throw new BadRequestException("Last name cant be empty");
+
+        if (userDTO.getEmail() == null || userDTO.getEmail().isEmpty())
+            throw new BadRequestException("Email cant be empty");
+
         UserEntity user = UserEntity.builder()
                 .firstName(userDTO.getFirstName())
                 .lastName(userDTO.getLastName())

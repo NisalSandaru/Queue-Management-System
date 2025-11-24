@@ -18,9 +18,9 @@ public class ServiceProvider extends Auditable {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "staff_id", nullable = false)
-    private UserEntity staff; // must be STAFF or ADMIN (enforce in service layer)
+    private UserEntity staff; // must be STAFF or ADMIN (enforce in serviceEntity layer)
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private ServiceEntity serviceEntity;
 }

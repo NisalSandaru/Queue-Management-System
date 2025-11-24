@@ -31,10 +31,10 @@ public class Booking extends Auditable {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    // service
+    // serviceEntity
     @ManyToOne(optional = false)
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private ServiceEntity serviceEntity;
 
     // reference to actual timeslot (may be null for ad-hoc custom bookings)
     @ManyToOne

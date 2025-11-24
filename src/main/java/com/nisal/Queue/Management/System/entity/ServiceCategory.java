@@ -23,7 +23,7 @@ public class ServiceCategory extends Auditable {
     private String description;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Service> services = new ArrayList<>();
+    private List<ServiceEntity> serviceEntities = new ArrayList<>();
 
     private String catImageUrl;
 }

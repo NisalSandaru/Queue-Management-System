@@ -23,7 +23,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> cusSignup
-            (@RequestBody UserDTO userDTO)throws UserNotFoundException {
+            (@RequestBody UserDTO userDTO) throws UserNotFoundException, BadRequestException {
         AuthResponse res = authService.CusSignUp(userDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }

@@ -25,10 +25,10 @@ public class TimeSlot extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Which service this slot is for
+    // Which serviceEntity this slot is for
     @ManyToOne(optional = false)
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private ServiceEntity serviceEntity;
 
     // Optional provider assignment for slot (if fixed)
     @ManyToOne
@@ -44,7 +44,7 @@ public class TimeSlot extends Auditable {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    // capacity and available slots (update availableCapacity in service layer/DB triggers)
+    // capacity and available slots (update availableCapacity in serviceEntity layer/DB triggers)
     @Column(name = "capacity", nullable = false)
     private Integer capacity = 1;
 

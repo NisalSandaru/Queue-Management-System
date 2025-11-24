@@ -20,7 +20,7 @@ public class RecurringSlot extends Auditable {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private ServiceEntity serviceEntity;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", length = 5, nullable = false)

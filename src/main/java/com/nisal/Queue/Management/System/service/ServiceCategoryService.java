@@ -87,9 +87,9 @@ public class ServiceCategoryService {
         ServiceCategory category = repository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 
-        // Optional safety rule: Block deleting categories that contain services
-        if (!category.getServices().isEmpty()) {
-            throw new RuntimeException("Cannot delete category that has services");
+        // Optional safety rule: Block deleting categories that contain serviceEntities
+        if (!category.getServiceEntities().isEmpty()) {
+            throw new RuntimeException("Cannot delete category that has serviceEntities");
         }
 
         repository.delete(category);

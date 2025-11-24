@@ -23,6 +23,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());
     }
+    @ExceptionHandler(ServiceNotFoundException.class)
+    public ResponseEntity<?> handleServiceNotFoundException(ServiceNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
+    }
 
 
     // 403 Forbidden (user is authenticated but not allowed)
